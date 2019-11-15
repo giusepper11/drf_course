@@ -1,11 +1,15 @@
 from rest_framework import serializers
-from news.models import Article
+from news.models import Article, Journalist
 from datetime import datetime
 from django.utils.timesince import timesince
 
 
 class ArticleSerializer(serializers.ModelSerializer):
     time_since_publication = serializers.SerializerMethodField()
+
+    # author = JournalistSerializer()
+
+    # author = serializers.StringRelatedField()
 
     class Meta:
         model = Article
@@ -14,6 +18,7 @@ class ArticleSerializer(serializers.ModelSerializer):
         exclude = ("id", "created_at", "updated_at")
 
     @staticmethod
+
     def get_time_since_publication(obj):
         publication_date = obj.publication_date
         now = datetime.now()
@@ -29,6 +34,16 @@ class ArticleSerializer(serializers.ModelSerializer):
     def validate_title(value):
         if len(value) < 60:
             raise serializers.ValidationError("Titulo precisa ter pelo menos 60 caracteres")
+
+
+class JournalistSerializer(serializers.ModelSerializer):
+    articles = serializers.HyperlinkedRelatedField(many=True, read_only=True, view_name='article-detail')
+
+    # articles = ArticleSerializer(read_only=True, many=True)
+
+    class Meta:
+        model = Journalist
+        fields = "__all__"
 
 # class ArticleSerializer(serializers.Serializer):
 #     id = serializers.IntegerField(read_only=True)
